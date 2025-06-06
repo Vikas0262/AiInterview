@@ -1,18 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
   const [isLogin, setIsLogin] = useState(mode === 'login');
+  
+  // Update isLogin when mode prop changes
+  useEffect(() => {
+    setIsLogin(mode === 'login');
+  }, [mode]);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
 
   if (!isOpen) return null;
 
   const switchMode = () => {
-    setIsLogin(!isLogin);
+    setIsLogin(prev => !prev);
+    // Reset form when switching modes
+    setFormData({
+      name: '',
+      email: '',
+      password: ''
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log(isLogin ? 'Login form submitted' : 'Signup form submitted');
+  
+    const endpoint = isLogin
+      ? 'http://localhost:5000/api/auth/login'
+      : 'http://localhost:5000/api/auth/signup';
+  
+    try {
+      const requestData = isLogin
+        ? { email: formData.email, password: formData.password }
+        : { name: formData.name, email: formData.email, password: formData.password };
+  
+      const response = await axios.post(endpoint, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
+  
+      console.log('Success:', response.data);
+      toast.success(`${isLogin ? 'Login' : 'Signup'} successful!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      // for cleaning inputs
+      setFormData({
+        name: '',
+        email: '',
+        password: ''
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Something went wrong!';
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
   };
 
   return (
@@ -44,8 +118,10 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
               <input
                 type="text"
                 id="name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[black]"
                 placeholder="John Doe"
+                value={formData.name}
+                onChange={handleChange}
                 required={!isLogin}
               />
             </div>
@@ -58,8 +134,10 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
             <input
               type="email"
               id="email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[black]"
               placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -78,8 +156,10 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
             <input
               type="password"
               id="password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[black]"
               placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
               required
               minLength={isLogin ? 6 : 8}
             />

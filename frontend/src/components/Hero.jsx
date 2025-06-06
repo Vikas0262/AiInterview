@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import aiImage from '../assets/ai-image1.png';
 const Hero = () => {
+    const navigate = useNavigate();
     const [isTyping, setIsTyping] = useState(true);
     const [typedText, setTypedText] = useState('');
     const fullText = 'Practice with voice, quizzes, and personalized feedback in real-time.';
@@ -23,6 +25,10 @@ const Hero = () => {
         }
     }, [typedText, isTyping]);
 
+    const handleChatClick = () => {
+        navigate('/chat');
+    };
+
     return (
         <section className="pt-24 pb-16 px-6 md:px-0 md:pt-32 md:pb-24 relative overflow-hidden">
             <div className="container px-6 mx-auto flex flex-col md:flex-row items-center">
@@ -36,7 +42,12 @@ const Hero = () => {
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
-                        <button className="px-6 py-3 bg-gradient-to-r from-[#4A90E2] to-[#735D78] rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all text-lg font-medium cursor-pointer">🎙️ Chat with AI</button>
+                        <button 
+                            onClick={handleChatClick}
+                            className="px-4 py-2 bg-gradient-to-r from-[#4A90E2] to-[#735D78] rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all text-lg font-medium cursor-pointer"
+                        >
+                            🎙️ Chat with AI
+                        </button>
                         <button className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-xl shadow-md hover:bg-white/30 transition-all text-lg cursor-pointer">📝 Take a Quiz</button>
                         <button className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-xl shadow-md hover:bg-white/30 transition-all text-lg cursor-pointer">📅 Schedule an Interview</button>
                     </div>
