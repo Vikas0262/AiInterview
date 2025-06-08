@@ -2,6 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FiSend, FiMic, FiPaperclip } from 'react-icons/fi';
 import { FaRobot } from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+// console.log("api key",apiKey);
+
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -10,6 +15,30 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const userName = 'Alexis'; // This would typically come from user context
+  const [chat, setChat] = useState(null);
+  const [model, setModel] = useState(null);
+
+  // Initialize Gemini
+  useEffect(() => {
+    const initGemini = async () => {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const chat = model.startChat({
+          history: [],
+          generationConfig: {
+            maxOutputTokens: 1000,
+          },
+        });
+        setModel(model);
+        setChat(chat);
+      } catch (error) {
+        console.error('Error initializing Gemini:', error);
+      }
+    };
+
+    initGemini();
+  }, []);
 
   const quickPrompts = [
     'Create image',
@@ -28,9 +57,9 @@ const Chat = () => {
     inputRef.current?.focus();
   }, [messages]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !chat) return;
 
     // Add user message
     const userMessage = {
@@ -44,17 +73,35 @@ const Chat = () => {
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Send message to Gemini
+      const result = await chat.sendMessage(inputValue);
+      const response = await result.response;
+      const text = response.text();
+
+      // Add AI response
       const aiMessage = {
         id: Date.now() + 1,
-        text: `I received your message: "${inputValue}". This is a simulated response. In a real app, this would connect to an AI service.`,
+        text: text,
         sender: 'ai',
         timestamp: new Date()
       };
+      
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error getting response from Gemini:', error);
+      
+      // Add error message
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: 'Sorry, I encountered an error. Please try again later.',
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleQuickPrompt = (prompt) => {
