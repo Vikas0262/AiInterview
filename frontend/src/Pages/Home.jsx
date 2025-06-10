@@ -36,13 +36,13 @@ const Home = () => {
                         <div className="text-center">
                             <h3 className="font-bold text-2xl text-[#2B3A67] mb-4">🚧 Website Under Construction</h3>
                             <p className="mb-6">We're currently working on some exciting improvements! The website will be fully functional in 1 week. Thank you for your patience and understanding.</p>
-                            <button 
+                            {/* <button 
                                 // onClick={() => setShowPopup(false)}
                                 className="bg-[#2B3A67] text-white px-6 py-2 rounded-md hover:bg-[#1e2a4a] transition-colors"
                                 aria-label="Close notification"
                             >
                                 Got it, I'll check back later!
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                 </div>
