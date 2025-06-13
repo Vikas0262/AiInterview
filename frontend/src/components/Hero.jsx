@@ -48,8 +48,8 @@ const Hero = () => {
                         >
                             🎙️ Chat with AI
                         </button>
-                        <button className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-xl shadow-md hover:bg-white/30 transition-all text-lg cursor-pointer">📝 Take a Quiz</button>
-                        <button className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-xl shadow-md hover:bg-white/30 transition-all text-lg cursor-pointer">📅 Schedule an Interview</button>
+                        {/* <button className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-xl shadow-md hover:bg-white/30 transition-all text-lg cursor-pointer">📝 Take a Quiz</button>
+                        <button className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-xl shadow-md hover:bg-white/30 transition-all text-lg cursor-pointer">📅 Schedule an Interview</button> */}
                     </div>
                     <div className="flex flex-col sm:flex-row justify-center md:justify-start space-y-3 sm:space-y-0 sm:space-x-4">
                         <button className="px-5 py-2 border border-white/30 rounded-lg hover:bg-white/10 transition-all cursor-pointer">📊 View Progress</button>
