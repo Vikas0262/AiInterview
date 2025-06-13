@@ -3,6 +3,7 @@ import Home from './Pages/Home';
 import Chat from './Pages/Chat';
 import About from './Pages/About';
 import Contact from './Pages/Contact';
+import Interview from './Pages/Interview';
 import Navbar from './components/Navbar';
 import ToastProvider from './components/ToastProvider';
 
@@ -17,6 +18,7 @@ function App() {
             <Route path="/chat" element={<Chat />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/interview" element={<Interview />} />
           </Routes>
         </div>
       </Router>

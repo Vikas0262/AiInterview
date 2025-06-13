@@ -44,8 +44,8 @@ const Chat = () => {
     'Create image',
     'Analyze code',
     'Summarize text',
-    'Make a plan',
-    'Surprise me'
+    'Make a plan'
+    // 'Surprise me'
   ];
 
   const scrollToBottom = () => {
