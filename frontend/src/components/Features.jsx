@@ -1,10 +1,11 @@
 import React from 'react';
+import { FaMicrophone, FaCommentDots, FaUsers, FaClipboardCheck } from 'react-icons/fa';
 
-const FeatureCard = ({ icon, title, description }) => (
+const FeatureCard = ({ icon: Icon, title, description }) => (
   <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer">
     <div className="px-6 text-center mb-4">
       <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center mx-auto">
-        <i className={`text-2xl ${icon}`}></i>
+        <Icon className="text-2xl text-white" />
       </div>
     </div>
     <h3 className="text-xl font-bold text-center mb-3">{title}</h3>
@@ -15,22 +16,22 @@ const FeatureCard = ({ icon, title, description }) => (
 const Features = () => {
   const features = [
     {
-      icon: 'fas fa-microphone',
+      icon: FaMicrophone,
       title: 'Real-Time Voice Interview',
       description: 'Practice with our AI interviewer using your voice. Get realistic interview experience with natural conversations.',
     },
     {
-      icon: 'fas fa-comment-dots',
+      icon: FaCommentDots,
       title: 'Instant Feedback',
       description: 'Receive detailed analysis and suggestions to improve your interview performance immediately after each session.',
     },
     {
-      icon: 'fas fa-users',
+      icon: FaUsers,
       title: 'Multiple Interview Types',
       description: 'Practice HR, technical, and behavioral interviews tailored to your industry and experience level.',
     },
     {
-      icon: 'fas fa-clipboard-check',
+      icon: FaClipboardCheck,
       title: 'Quiz Practice and Scoring',
       description: 'Test your knowledge with industry-specific quizzes and track your progress over time with detailed scoring.',
     },
