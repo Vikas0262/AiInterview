@@ -25,7 +25,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Features', path: '#features', isExternal: true },
-    { name: 'Pricing', path: '#pricing', isExternal: true },
+    { name: 'Practice-Question', path: '/practice-question', isExternal: true },
     { name: 'About', path: '/about', isExternal: false },
     { name: 'Contact', path: '/contact', isExternal: false },
     { name: 'Interview', path: '/interview', isExternal: false },
@@ -55,7 +55,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-900/80 backdrop-blur-md fixed w-full z-50 border-b border-gray-800">
+    <nav className="backdrop-blur-md fixed w-full z-50 bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -111,7 +111,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-gray-800">
+        <div className="md:hidden bg-gray-900">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link, index) => (
               <div key={index} className="px-3 py-2">
