@@ -1,29 +1,66 @@
 import React from 'react';
-import { FaRobot, FaLightbulb, FaUsers, FaChartLine } from 'react-icons/fa';
-// import { motion } from 'framer-motion';
-// import teamImage from '../assets/team.jpg';
+import { motion } from 'framer-motion';
+import { 
+  FaRobot, 
+  FaLightbulb, 
+  FaUsers, 
+  FaChartLine, 
+  FaLinkedin, 
+  FaTwitter, 
+  FaGithub, 
+  FaRocket, 
+  FaCode, 
+  FaBrain, 
+  FaUserTie 
+} from 'react-icons/fa';
 
 const About = () => {
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   const features = [
     {
-      icon: <FaRobot className="w-8 h-8 text-blue-500" />,
-      title: 'AI-Powered',
-      description: 'Leveraging cutting-edge AI to provide intelligent and contextual responses.'
+      icon: <FaRobot className="w-8 h-8 text-indigo-500" />,
+      title: 'AI-Powered Learning',
+      description: 'Harness the power of artificial intelligence to get personalized interview preparation and smart practice questions.'
     },
     {
-      icon: <FaLightbulb className="w-8 h-8 text-yellow-500" />,
-      title: 'Smart Solutions',
-      description: 'Innovative approaches to solve complex problems efficiently.'
+      icon: <FaLightbulb className="w-8 h-8 text-amber-500" />,
+      title: 'Smart Practice',
+      description: 'Our intelligent system adapts to your skill level, providing targeted practice to improve your weak areas.'
     },
     {
-      icon: <FaUsers className="w-8 h-8 text-green-500" />,
-      title: 'User-Centric',
-      description: 'Designed with the user experience as our top priority.'
+      icon: <FaUsers className="w-8 h-8 text-emerald-500" />,
+      title: 'Community Driven',
+      description: 'Join a growing community of learners and professionals sharing knowledge and experiences.'
     },
     {
-      icon: <FaChartLine className="w-8 h-8 text-purple-500" />,
-      title: 'Continuous Improvement',
-      description: 'Constantly evolving to provide better services and features.'
+      icon: <FaChartLine className="w-8 h-8 text-rose-500" />,
+      title: 'Track Progress',
+      description: 'Detailed analytics help you understand your progress and areas for improvement.'
+    },
+    {
+      icon: <FaCode className="w-8 h-8 text-blue-500" />,
+      title: 'Real-world Scenarios',
+      description: 'Practice with questions based on real interview scenarios from top tech companies.'
+    },
+    {
+      icon: <FaBrain className="w-8 h-8 text-purple-500" />,
+      title: 'Skill Assessment',
+      description: 'Get detailed feedback on your technical and problem-solving abilities.'
     }
   ];
 
@@ -31,22 +68,46 @@ const About = () => {
     {
       name: 'Alex Johnson',
       role: 'CEO & Founder',
-      image: 'https://randomuser.me/api/portraits/men/32.jpg'
+      image: 'https://randomuser.me/api/portraits/men/32.jpg',
+      bio: 'Tech entrepreneur with 10+ years of experience in EdTech and AI.',
+      social: {
+        linkedin: '#',
+        twitter: '#',
+        github: '#'
+      }
     },
     {
       name: 'Sarah Williams',
       role: 'Lead Developer',
-      image: 'https://randomuser.me/api/portraits/women/44.jpg'
+      image: 'https://randomuser.me/api/portraits/women/44.jpg',
+      bio: 'Full-stack developer passionate about creating seamless learning experiences.',
+      social: {
+        linkedin: '#',
+        twitter: '#',
+        github: '#'
+      }
     },
     {
       name: 'Michael Chen',
       role: 'AI Specialist',
-      image: 'https://randomuser.me/api/portraits/men/75.jpg'
+      image: 'https://randomuser.me/api/portraits/men/75.jpg',
+      bio: 'Machine learning expert focused on adaptive learning technologies.',
+      social: {
+        linkedin: '#',
+        twitter: '#',
+        github: '#'
+      }
     },
     {
       name: 'Emma Davis',
       role: 'UX Designer',
-      image: 'https://randomuser.me/api/portraits/women/68.jpg'
+      image: 'https://randomuser.me/api/portraits/women/68.jpg',
+      bio: 'Designer dedicated to creating intuitive and engaging user experiences.',
+      social: {
+        linkedin: '#',
+        twitter: '#',
+        github: '#'
+      }
     }
   ];
 
