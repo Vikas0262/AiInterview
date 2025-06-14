@@ -5,6 +5,7 @@ import { auth, googleProvider, githubProvider, signInWithPopup } from '../Fireba
 import { FaGithub, FaGoogle, FaTimes } from 'react-icons/fa';
 
 const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
+  console.log('AuthModal rendered with isOpen:', isOpen, 'mode:', mode);
   const [isLogin, setIsLogin] = useState(mode === 'login');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -26,7 +27,10 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
     }));
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('AuthModal not rendering because isOpen is false');
+    return null;
+  }
 
   const switchMode = () => {
     setIsLogin(prev => !prev);
@@ -140,8 +144,10 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
     );
   }
 
+  console.log('Rendering AuthModal with isOpen:', isOpen);
+
   return (
-    <div className="flex items-center justify-center z-50 p-3">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div className="bg-white rounded-xl p-6 w-full max-w-md relative">
         <button 
           onClick={onClose}
