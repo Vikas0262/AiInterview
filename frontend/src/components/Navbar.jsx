@@ -1,13 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FaRobot, FaBars, FaTimes } from 'react-icons/fa';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FaRobot, FaBars, FaTimes, FaUserCircle, FaChevronDown, FaSignOutAlt } from 'react-icons/fa';
 import AuthModal from './AuthModal';
 
 const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userData = JSON.parse(localStorage.getItem('user'));
+    setUser(userData);
+  }, [location]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsProfileOpen(false);
+    navigate('/');
+  };
 
   const openAuthModal = (mode) => {
     setAuthMode(mode);
@@ -55,7 +72,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="backdrop-blur-md fixed w-full z-50 bg-gray-900">
+    <nav className="backdrop-blur-md fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -75,20 +92,56 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Auth Buttons - Desktop */}
+          {/* Auth Buttons / Profile - Desktop */}
           <div className="hidden md:flex items-center space-x-3">
-            <button 
-              onClick={() => openAuthModal('login')}
-              className="px-4 py-2 text-sm font-medium text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              Log In
-            </button>
-            <button 
-              onClick={() => openAuthModal('signup')}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Sign Up
-            </button>
+            {user ? (
+              <div className="relative">
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center space-x-2 text-white hover:bg-white/10 rounded-full p-1 pr-3 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : <FaUserCircle className="w-6 h-6" />}
+                  </div>
+                  <span className="hidden sm:inline">{user.name || 'Profile'}</span>
+                  <FaChevronDown className={`w-3 h-3 transition-transform ${isProfileOpen ? 'transform rotate-180' : ''}`} />
+                </button>
+                
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      Your Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                    >
+                      <FaSignOutAlt className="mr-2" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button 
+                  onClick={() => openAuthModal('login')}
+                  className="px-4 py-2 text-sm font-medium text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  Log In
+                </button>
+                <button 
+                  onClick={() => openAuthModal('signup')}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -111,7 +164,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-gray-900">
+        <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link, index) => (
               <div key={index} className="px-3 py-2">
@@ -138,18 +191,41 @@ const Navbar = () => {
             ))}
             <div className="pt-4 pb-3 border-t border-gray-700">
               <div className="space-y-1 px-2">
-                <button
-                  onClick={() => openAuthModal('login')}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-white/90 hover:text-white hover:bg-gray-700 rounded-md"
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => openAuthModal('signup')}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-                >
-                  Sign Up
-                </button>
+                {user ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="block px-3 py-2 text-base font-medium text-white/90 hover:text-white hover:bg-gray-700 rounded-md"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 py-2 text-base font-medium text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-md"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => openAuthModal('login')}
+                      className="block w-full text-left px-3 py-2 text-base font-medium text-white/90 hover:text-white hover:bg-gray-700 rounded-md"
+                    >
+                      Log In
+                    </button>
+                    <button
+                      onClick={() => openAuthModal('signup')}
+                      className="block w-full text-left px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
