@@ -2,9 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
+const domains = [
+  { id: 'javascript', name: 'JavaScript', icon: '💻' },
+  { id: 'react', name: 'React', icon: '⚛️' },
+  { id: 'nodejs', name: 'Node.js', icon: '🟢' },
+  { id: 'html-css', name: 'HTML & CSS', icon: '🎨' },
+  { id: 'python', name: 'Python', icon: '🐍' },
+  { id: 'java', name: 'Java', icon: '☕' },
+  { id: 'sql', name: 'SQL', icon: '🗃️' },
+  { id: 'aws', name: 'AWS', icon: '☁️' },
+  { id: 'devops', name: 'DevOps', icon: '🔄' },
+  { id: 'dsa', name: 'Data Structures', icon: '📊' },
+  { id: 'system-design', name: 'System Design', icon: '🏗️' },
+  { id: 'ml', name: 'Machine Learning', icon: '🤖' },
+  { id: 'cybersecurity', name: 'Cybersecurity', icon: '🔒' },
+  { id: 'mobile-dev', name: 'Mobile Dev', icon: '📱' },
+  { id: 'testing', name: 'Software Testing', icon: '🧪' },
+];
+
 const questions = [
   {
     id: 1,
+    domain: 'javascript',
     question: 'What is the output of `console.log(2 + "2")` in JavaScript?',
     options: ['4', '22', 'NaN', 'Error'],
     correctAnswer: '22',
@@ -12,6 +31,7 @@ const questions = [
   },
   {
     id: 2,
+    domain: 'javascript',
     question: 'Which of the following is NOT a JavaScript framework?',
     options: ['React', 'Angular', 'Vue', 'Django'],
     correctAnswer: 'Django',
@@ -19,6 +39,7 @@ const questions = [
   },
   {
     id: 3,
+    domain: 'html-css',
     question: 'What does CSS stand for?',
     options: [
       'Computer Style Sheets',
@@ -31,6 +52,7 @@ const questions = [
   },
   {
     id: 4,
+    domain: 'javascript',
     question: 'Which method is used to add an element to the end of an array?',
     options: ['push()', 'pop()', 'shift()', 'unshift()'],
     correctAnswer: 'push()',
@@ -38,6 +60,7 @@ const questions = [
   },
   {
     id: 5,
+    domain: 'javascript',
     question: 'What is the correct way to create a function in JavaScript?',
     options: [
       'function = myFunction()',
@@ -47,10 +70,62 @@ const questions = [
     ],
     correctAnswer: 'function myFunction()',
     explanation: 'The correct syntax for function declaration in JavaScript is `function functionName() { }`.'
+  },
+  {
+    id: 6,
+    domain: 'react',
+    question: 'What is the correct way to create a React component?',
+    options: [
+      'function MyComponent() { return <div>Hello</div> }',
+      'const MyComponent = () => { <div>Hello</div> }',
+      'class MyComponent { render() { return <div>Hello</div> } }',
+      'All of the above'
+    ],
+    correctAnswer: 'function MyComponent() { return <div>Hello</div> }',
+    explanation: 'All are valid ways to create React components, but the first one is the most common functional component syntax.'
+  },
+  {
+    id: 7,
+    domain: 'nodejs',
+    question: 'Which of the following is a core module in Node.js?',
+    options: ['fs', 'express', 'mongoose', 'react'],
+    correctAnswer: 'fs',
+    explanation: 'fs is a core module in Node.js used for file system operations.'
+  },
+  {
+    id: 8,
+    domain: 'dsa',
+    question: 'What is the time complexity of a binary search algorithm?',
+    options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
+    correctAnswer: 'O(log n)',
+    explanation: 'Binary search has a time complexity of O(log n) as it divides the search space in half with each comparison.'
+  },
+  {
+    id: 9,
+    domain: 'system-design',
+    question: 'What is the purpose of a CDN in system design?',
+    options: [
+      'To store user session data',
+      'To serve static content from locations closer to users',
+      'To handle database queries',
+      'To manage user authentication'
+    ],
+    correctAnswer: 'To serve static content from locations closer to users',
+    explanation: 'A CDN (Content Delivery Network) helps serve static content from servers that are geographically closer to users, reducing latency.'
+  },
+  {
+    id: 10,
+    domain: 'html-css',
+    question: 'Which CSS property is used to change the text color?',
+    options: ['text-color', 'font-color', 'color', 'text-style'],
+    correctAnswer: 'color',
+    explanation: 'The `color` property in CSS is used to set the color of text.'
   }
 ];
 
 const PracticeQuestions = () => {
+  const [selectedDomain, setSelectedDomain] = useState('');
+  const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState('');
   const [score, setScore] = useState(0);
@@ -59,8 +134,25 @@ const PracticeQuestions = () => {
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
   const navigate = useNavigate();
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  // Filter questions based on selected domain
+  const filteredQuestions = selectedDomain 
+    ? questions.filter(q => q.domain === selectedDomain)
+    : [];
+
+  const currentQuestion = filteredQuestions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === filteredQuestions.length - 1;
+  
+  const startQuiz = (domainId) => {
+    setSelectedDomain(domainId);
+    setQuizStarted(true);
+    // Reset all quiz state
+    setCurrentQuestionIndex(0);
+    setSelectedOption('');
+    setScore(0);
+    setShowResult(false);
+    setAnswers({});
+    setTimeLeft(300);
+  };
 
   useEffect(() => {
     if (timeLeft > 0 && !showResult) {
@@ -127,210 +219,55 @@ const PracticeQuestions = () => {
   };
 
   const getProgressPercentage = () => {
-    return ((currentQuestionIndex + 1) / questions.length) * 100;
+    if (filteredQuestions.length === 0) return 0;
+    return ((currentQuestionIndex + 1) / filteredQuestions.length) * 100;
   };
 
-  if (showResult) {
-    const percentage = Math.round((score / questions.length) * 100);
-    const isPerfect = score === questions.length;
-    const passed = score >= questions.length / 2;
-    
+  // Domain selection screen
+  if (!quizStarted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-xl overflow-hidden"
+            className="bg-white rounded-xl shadow-lg overflow-hidden"
           >
-            {/* Header Section */}
-            <div className={`${isPerfect ? 'bg-gradient-to-r from-green-500 to-emerald-600' : passed ? 'bg-gradient-to-r from-blue-500 to-indigo-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} px-8 py-10 text-center`}>
-              <div className="max-w-md mx-auto">
-                <div className="relative w-40 h-40 mx-auto mb-6">
-                  <svg className="w-full h-full" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      fill="none"
-                      stroke="rgba(255, 255, 255, 0.2)"
-                      strokeWidth="8"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(percentage / 100) * 283}, 283`}
-                      transform="rotate(-90 50 50)"
-                    />
-                    <text
-                      x="50"
-                      y="55"
-                      className="text-3xl font-bold"
-                      textAnchor="middle"
-                      fill="white"
-                      style={{ fontSize: '28px', fontWeight: '700' }}
-                    >
-                      {percentage}%
-                    </text>
+            <div className="p-6 text-center">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Select a Domain</h1>
+              <p className="text-gray-600 text-sm mb-6">Choose a topic to begin practicing</p>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {domains.map((domain) => (
+                  <motion.div
+                    key={domain.id}
+                    whileHover={{ 
+                      y: -3,
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    className="p-3 border border-gray-200 rounded-lg bg-white hover:border-indigo-300 hover:bg-indigo-50/50 cursor-pointer transition-all duration-200 h-full flex flex-col items-center justify-center text-center"
+                    onClick={() => startQuiz(domain.id)}
+                  >
+                    <div className="text-2xl mb-2">{domain.icon}</div>
+                    <h3 className="text-sm font-medium text-gray-800 line-clamp-1">{domain.name}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {questions.filter(q => q.domain === domain.id).length} Qs
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+              
+              <div className="mt-10 pt-6 border-t border-gray-100">
+                <button 
+                  onClick={() => navigate('/')}
+                  className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {isPerfect ? (
-                      <span className="text-5xl">🎉</span>
-                    ) : passed ? (
-                      <span className="text-5xl">👍</span>
-                    ) : (
-                      <span className="text-5xl">💪</span>
-                    )}
-                  </div>
-                </div>
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  {isPerfect ? 'Perfect Score!' : passed ? 'Quiz Completed!' : 'Keep Practicing!'}
-                </h1>
-                <p className="text-white/90 text-lg">
-                  You scored {score} out of {questions.length} questions correct
-                </p>
-                <p className="mt-2 text-white/80">
-                  {isPerfect
-                    ? 'Outstanding! You aced the quiz!'
-                    : passed
-                    ? 'Well done! You passed with flying colors!'
-                    : 'Review the answers below and try again!'}
-                </p>
-              </div>
-            </div>
-
-            {/* Results Summary */}
-            <div className="px-6 py-8 sm:px-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-indigo-50 p-6 rounded-xl">
-                  <h3 className="text-lg font-semibold text-indigo-900 mb-3">Performance Summary</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Correct Answers</span>
-                      <span className="font-medium text-green-600">{score}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Incorrect Answers</span>
-                      <span className="font-medium text-red-600">{questions.length - score}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Success Rate</span>
-                      <span className="font-medium text-indigo-700">{percentage}%</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-amber-50 p-6 rounded-xl">
-                  <h3 className="text-lg font-semibold text-amber-900 mb-3">Quick Actions</h3>
-                  <div className="space-y-3">
-                    <button
-                      onClick={handleRestart}
-                      className="w-full flex items-center justify-center px-4 py-2.5 bg-white border border-amber-200 rounded-lg text-amber-700 font-medium hover:bg-amber-50 transition-colors"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                      </svg>
-                      Try Again
-                    </button>
-                    <button
-                      onClick={() => navigate('/')}
-                      className="w-full flex items-center justify-center px-4 py-2.5 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                      </svg>
-                      Back to Home
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Detailed Results */}
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-6 pb-2 border-b border-gray-100">
-                  Detailed Results
-                </h2>
-                <div className="space-y-4">
-                  {questions.map((q, index) => {
-                    const answer = answers[q.id];
-                    const isCorrect = answer?.isCorrect;
-                    
-                    return (
-                      <div 
-                        key={q.id}
-                        className={`p-5 rounded-xl border ${
-                          isCorrect 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
-                        }`}
-                      >
-                        <div className="flex">
-                          <div className={`flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center mr-3 mt-0.5 ${
-                            isCorrect 
-                              ? 'bg-green-100 text-green-600' 
-                              : 'bg-red-100 text-red-600'
-                          }`}>
-                            {isCorrect ? '✓' : '✗'}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900 mb-3">
-                              <span className="font-bold text-indigo-700">Q{index + 1}:</span> {q.question}
-                            </h3>
-                            
-                            <div className="ml-6 space-y-3">
-                              <div>
-                                <span className="text-sm font-medium text-gray-600">Your answer:</span>
-                                <p className={`mt-1 px-3 py-2 rounded-lg inline-block ${
-                                  isCorrect 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {answer?.selectedOption || 'Not answered'}
-                                </p>
-                              </div>
-                              
-                              {!isCorrect && (
-                                <div>
-                                  <span className="text-sm font-medium text-gray-600">Correct answer:</span>
-                                  <p className="mt-1 px-3 py-2 rounded-lg bg-green-100 text-green-800 inline-block">
-                                    {q.correctAnswer}
-                                  </p>
-                                </div>
-                              )}
-                              
-                              <div className="bg-white/50 p-3 rounded-lg border border-gray-100">
-                                <span className="text-sm font-medium text-gray-600">Explanation:</span>
-                                <p className="mt-1 text-gray-700">{q.explanation}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Final CTA */}
-              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl text-center">
-                <h3 className="text-xl font-bold text-indigo-900 mb-3">How did you find this quiz?</h3>
-                <p className="text-gray-600 mb-5">We'd love to hear your feedback to help us improve!</p>
-                <div className="flex flex-wrap justify-center gap-3">
-                  <button className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                    It was great! 👍
-                  </button>
-                  <button className="px-5 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                    Could be better
-                  </button>
-                  <button className="px-5 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                    Share Feedback
-                  </button>
-                </div>
+                  Back to Home
+                </button>
               </div>
             </div>
           </motion.div>
@@ -339,100 +276,141 @@ const PracticeQuestions = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-lg overflow-hidden"
-        >
-          {/* Header */}
-          <div className="bg-indigo-600 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-white">Practice Questions</h1>
-              <div className="bg-indigo-700 text-white text-sm font-medium px-3 py-1 rounded-full">
-                {formatTime(timeLeft)}
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="w-full bg-indigo-400 rounded-full h-2">
-                <div 
-                  className="bg-white h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${getProgressPercentage()}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between mt-1 text-xs text-indigo-100">
-                <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-                <span>{Math.round(getProgressPercentage())}% Complete</span>
-              </div>
-            </div>
+  if (showResult) {
+    const percentage = Math.round((score / filteredQuestions.length) * 100);
+    const isPerfect = score === filteredQuestions.length;
+    const passed = score >= filteredQuestions.length / 2;
+    
+    return (
+      <div className="min-h-screen bg-white py-12 px-4 sm:px-6">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-50 mb-6">
+            <span className="text-4xl">{isPerfect ? '🎉' : passed ? '👍' : '💪'}</span>
           </div>
+          
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {isPerfect ? 'Perfect!' : passed ? 'Quiz Completed!' : 'Good Try!'}
+          </h1>
+          <p className="text-gray-600 mb-8">
+            You scored <span className="font-semibold text-indigo-600">{score} out of {filteredQuestions.length}</span> questions correctly
+          </p>
 
-          {/* Question */}
-          <div className="p-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-2">
-                {currentQuestion.question}
-              </h2>
-              <div className="mt-6 space-y-3">
-                {currentQuestion.options.map((option, index) => (
-                  <div 
-                    key={index}
-                    onClick={() => handleOptionSelect(option)}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedOption === option 
-                        ? 'border-indigo-500 bg-indigo-50' 
-                        : 'border-gray-200 hover:border-indigo-300'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center mr-3 ${
-                        selectedOption === option 
-                          ? 'border-indigo-500 bg-indigo-100' 
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedOption === option && (
-                          <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
-                        )}
-                      </div>
-                      <span className="text-gray-800">{option}</span>
-                    </div>
+          <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Correct Answers:</h2>
+            <div className="space-y-4">
+              {filteredQuestions.map((q, index) => (
+                <div key={q.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                  <p className="font-medium text-gray-800 mb-2">Q{index + 1}. {q.question}</p>
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-600 mr-2">Correct Answer:</span>
+                    <span className="text-sm font-medium text-green-600">{q.correctAnswer}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex justify-between mt-8 pt-4 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handlePrev}
-                disabled={currentQuestionIndex === 0}
-                className={`px-4 py-2 text-sm font-medium rounded-md ${
-                  currentQuestionIndex === 0
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50'
-                }`}
-              >
-                Previous
-              </button>
-              
-              <button
-                type="button"
-                onClick={isLastQuestion ? handleFinish : handleNext}
-                disabled={!selectedOption}
-                className={`px-4 py-2 text-sm font-medium rounded-md ${
-                  !selectedOption
-                    ? 'bg-indigo-300 cursor-not-allowed text-white'
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                }`}
-              >
-                {isLastQuestion ? 'Finish' : 'Next'}
-              </button>
+                </div>
+              ))}
             </div>
           </div>
-        </motion.div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleRestart}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex-1 sm:flex-none"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate('/practice-questions')}
+              className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex-1 sm:flex-none"
+            >
+              Choose Another Topic
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white py-8 px-4 sm:px-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <div className="flex justify-between text-sm text-gray-600 mb-1">
+            <span>Question {currentQuestionIndex + 1} of {filteredQuestions.length}</span>
+            <span>{formatTime(timeLeft)}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${getProgressPercentage()}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Question */}
+        <div className="mb-8">
+          <h2 className="text-xl font-medium text-gray-900 mb-6">
+            {currentQuestion.question}
+          </h2>
+          
+          {/* Options */}
+          <div className="space-y-3">
+            {currentQuestion.options.map((option, index) => (
+              <div 
+                key={index}
+                onClick={() => handleOptionSelect(option)}
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  selectedOption === option 
+                    ? 'border-indigo-500 bg-indigo-50' 
+                    : 'border-gray-200 hover:border-indigo-200'
+                }`}
+              >
+                <div className="flex items-center">
+                  <div className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center mr-3 ${
+                    selectedOption === option 
+                      ? 'border-indigo-500 bg-indigo-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {selectedOption === option && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-gray-800">{option}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={handlePrev}
+            disabled={currentQuestionIndex === 0}
+            className={`px-5 py-2.5 text-sm font-medium rounded-md ${
+              currentQuestionIndex === 0
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-indigo-600 hover:bg-indigo-50'
+            }`}
+          >
+            ← Previous
+          </button>
+          
+          <button
+            type="button"
+            onClick={isLastQuestion ? handleFinish : handleNext}
+            disabled={!selectedOption}
+            className={`px-5 py-2.5 text-sm font-medium rounded-md ${
+              !selectedOption
+                ? 'bg-gray-200 cursor-not-allowed text-gray-500'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            }`}
+          >
+            {isLastQuestion ? 'Submit Quiz' : 'Next →'}
+          </button>
+        </div>
       </div>
     </div>
   );
