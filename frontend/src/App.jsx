@@ -7,6 +7,7 @@ import Interview from './Pages/Interview';
 import PracticeQuestions from './Pages/PracticeQuestions';
 import Navbar from './components/Navbar';
 import ToastProvider from './components/ToastProvider';
+import Profile from './Pages/Profile';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/interview" element={<Interview />} />
             <Route path="/practice-question" element={<PracticeQuestions />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </div>
       </Router>
