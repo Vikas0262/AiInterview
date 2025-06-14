@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaRobot, FaBars, FaTimes, FaUserCircle, FaChevronDown, FaSignOutAlt } from 'react-icons/fa';
-import AuthModal from './AuthModal';
 
-const Navbar = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
+const Navbar = (props) => {
+  const { onOpenAuthModal } = props;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -26,14 +24,15 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const openAuthModal = (mode) => {
-    setAuthMode(mode);
-    setIsAuthModalOpen(true);
+  const handleAuthClick = (mode) => {
+    console.log('Auth button clicked with mode:', mode);
+    console.log('onOpenAuthModal prop:', onOpenAuthModal);
+    if (typeof onOpenAuthModal === 'function') {
+      onOpenAuthModal(mode);
+    } else {
+      console.error('onOpenAuthModal is not a function');
+    }
     setIsMobileMenuOpen(false);
-  };
-
-  const closeAuthModal = () => {
-    setIsAuthModalOpen(false);
   };
 
   useEffect(() => {
@@ -42,13 +41,14 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Features', path: '#features', isExternal: true },
-    { name: 'Practice-Question', path: '/practice-question', isExternal: true },
+    { name: 'Practice-Question', path: '/practice-question', isExternal: false },
     { name: 'About', path: '/about', isExternal: false },
     { name: 'Contact', path: '/contact', isExternal: false },
     { name: 'Interview', path: '/interview', isExternal: false },
   ];
 
-  const renderNavLink = (link) => {
+  const renderNavLink = (link,) => {
+    
     if (link.isExternal) {
       return (
         <a 
@@ -72,7 +72,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="backdrop-blur-md fixed w-full z-50">
+    <nav className="backdrop-blur-md fixed w-full z-50 bg-blue-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -129,13 +129,13 @@ const Navbar = () => {
             ) : (
               <>
                 <button 
-                  onClick={() => openAuthModal('login')}
+                  onClick={() => handleAuthClick('login')}
                   className="px-4 py-2 text-sm font-medium text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
                 >
                   Log In
                 </button>
                 <button 
-                  onClick={() => openAuthModal('signup')}
+                  onClick={() => handleAuthClick('signup')}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Sign Up
@@ -213,13 +213,13 @@ const Navbar = () => {
                 ) : (
                   <>
                     <button
-                      onClick={() => openAuthModal('login')}
+                      onClick={() => handleAuthClick('login')}
                       className="block w-full text-left px-3 py-2 text-base font-medium text-white/90 hover:text-white hover:bg-gray-700 rounded-md"
                     >
                       Log In
                     </button>
                     <button
-                      onClick={() => openAuthModal('signup')}
+                      onClick={() => handleAuthClick('signup')}
                       className="block w-full text-left px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
                     >
                       Sign Up
@@ -232,11 +232,7 @@ const Navbar = () => {
         </div>
       )}
       
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={closeAuthModal} 
-        mode={authMode} 
-      />
+
     </nav>
   );
 };
