@@ -227,18 +227,18 @@ const PracticeQuestions = () => {
   if (!quizStarted) {
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-[6rem] px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-xl shadow-lg overflow-hidden"
           >
-            <div className="p-6 text-center">
+            <div className="p-5 text-center">
               <h1 className="text-2xl font-bold text-gray-900 mb-1">Select a Domain</h1>
               <p className="text-gray-600 text-sm mb-6">Choose a topic to begin practicing</p>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-5">
                 {domains.map((domain) => (
                   <motion.div
                     key={domain.id}
@@ -259,12 +259,12 @@ const PracticeQuestions = () => {
                 ))}
               </div>
               
-              <div className="mt-10 pt-6 border-t border-gray-100">
+              <div className="mt-5 pt-3 border-t border-gray-100">
                 <button 
                   onClick={() => navigate('/')}
                   className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
                 >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
                   Back to Home
@@ -283,7 +283,7 @@ const PracticeQuestions = () => {
     const passed = score >= filteredQuestions.length / 2;
     
     return (
-      <div className="min-h-screen bg-white py-12 px-4 sm:px-6">
+      <div className="min-h-screen bg-white pt-[6rem] px-4 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-50 mb-6">
             <span className="text-4xl">{isPerfect ? '🎉' : passed ? '👍' : '💪'}</span>
