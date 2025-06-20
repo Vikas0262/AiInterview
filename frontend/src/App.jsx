@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Home from './Pages/Home';
 import Chat from './Pages/Chat';
 import About from './Pages/About';
@@ -14,6 +14,28 @@ import Profile from './Pages/Profile';
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+
+  useEffect(() => {
+    // Check if it's the user's first visit
+    const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
+    const isLoggedIn = localStorage.getItem('user');
+    
+    if (!hasVisitedBefore && !isLoggedIn) {
+      // Set a timeout to show the login modal after 5 seconds
+      const timer = setTimeout(() => {
+        setAuthMode('login');
+        setIsAuthModalOpen(true);
+        // Mark that the user has seen the modal
+        localStorage.setItem('hasVisitedBefore', 'true');
+      }, 5000);
+      
+      // Clean up the timer if the component unmounts
+      return () => clearTimeout(timer);
+    } else if (!isLoggedIn) {
+      // If not first visit but not logged in, set the flag for future visits
+      localStorage.setItem('hasVisitedBefore', 'true');
+    }
+  }, []);
 
   const openAuthModal = (mode) => {
     console.log('openAuthModal called with mode:', mode);
