@@ -29,6 +29,7 @@ const Interview = () => {
   // State management
   const [isInChatMode, setIsInChatMode] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // Start with muted
+  const [micError, setMicError] = useState(null);
   const [isVideoOn, setIsVideoOn] = useState(false); // Start with video off
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -131,6 +132,7 @@ const Interview = () => {
     };
     
     setChatMessages(prev => [...prev, userMessage]);
+    console.log('📩 User sent message:', message);
     setIsProcessing(true);
     
     // Simulate AI response
@@ -152,41 +154,97 @@ const Interview = () => {
       };
       
       setChatMessages(prev => [...prev, aiMessage]);
+      console.log('🤖 AI response:', aiMessage.message);
       setIsProcessing(false);
     }, 1500);
   };
   
   // Toggle between chat and video modes
   const toggleChatMode = () => {
-    setIsInChatMode(!isInChatMode);
+    const newMode = !isInChatMode;
+    console.log(`🔄 Switching to ${newMode ? 'Chat' : 'Video'} mode`);
+    setIsInChatMode(newMode);
   };
   
   // Toggle mute
   const toggleMute = async () => {
     const newMutedState = !isMuted;
-    setIsMuted(newMutedState);
+    console.log(`🔇 Microphone ${newMutedState ? 'muted' : 'unmuted'}`);
+    setMicError(null);
     
     if (!newMutedState && recognition) {
       // If unmuting, start listening
       try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        recognition.start();
-        setIsListening(true);
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          } 
+        });
+        
+        // Test if we can actually get audio data
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        source.connect(analyser);
+        
+        try {
+          recognition.start();
+          console.log('🎤 Speech recognition started');
+          setIsListening(true);
+          
+          // Visual feedback for audio level
+          const checkAudioLevel = () => {
+            if (!isListening) return;
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            
+            if (average < 5) {
+              console.log('🔈 Low audio input detected');
+              setMicError('Speak louder or move closer to the microphone');
+            } else {
+              setMicError(null);
+            }
+            
+            requestAnimationFrame(checkAudioLevel);
+          };
+          
+          checkAudioLevel();
+          
+        } catch (err) {
+          console.error('Error starting speech recognition:', err);
+          setMicError('Error initializing speech recognition');
+          setIsMuted(true);
+          return;
+        }
       } catch (err) {
         console.error('Error accessing microphone:', err);
-        alert('Please allow microphone access to use voice commands.');
+        setMicError('Microphone access denied. Please allow access in your browser settings.');
         setIsMuted(true);
+        return;
       }
     } else if (recognition) {
       // If muting, stop listening
-      recognition.stop();
+      try {
+        recognition.stop();
+        console.log('🔇 Speech recognition stopped');
+      } catch (err) {
+        console.error('Error stopping speech recognition:', err);
+      }
       setIsListening(false);
+      setMicError(null);
     }
+    
+    setIsMuted(newMutedState);
   };
   
   // Toggle video
   const toggleVideo = async () => {
     const newVideoState = !isVideoOn;
+    console.log(`🎥 Camera ${newVideoState ? 'enabled' : 'disabled'}`);
     
     // If we're turning video off, stop all video tracks
     if (!newVideoState && videoRef.current?.srcObject) {
@@ -212,6 +270,7 @@ const Interview = () => {
   const processUserInput = useCallback(async (text) => {
     if (!text.trim()) return;
     
+    console.log('🎤 User speech detected:', text);
     setIsProcessing(true);
     
     try {
@@ -256,6 +315,7 @@ const Interview = () => {
       setChatMessages(prev => [...prev, aiMessage]);
       
       // Speak the response
+      console.log('🔊 AI speaking response:', aiResponse);
       const speech = new SpeechSynthesisUtterance(aiResponse);
       speech.onend = () => {
         setChatMessages(prev => 
@@ -301,11 +361,30 @@ const Interview = () => {
     };
     
     recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
+      console.error('Speech recognition error:', event.error);
       setIsListening(false);
-      if (event.error === 'not-allowed') {
-        alert('Please allow microphone access to use voice commands.');
-        setIsMuted(true);
+      
+      switch(event.error) {
+        case 'no-speech':
+          console.log('No speech was detected. Microphone might be muted or not working.');
+          setMicError('No speech detected. Try speaking louder or checking your microphone.');
+          break;
+        case 'audio-capture':
+          console.error('No microphone was found.');
+          setMicError('No microphone detected. Please check your audio device.');
+          break;
+        case 'not-allowed':
+          console.error('Microphone access was denied.');
+          setMicError('Microphone access denied. Please allow access in your browser settings.');
+          setIsMuted(true);
+          break;
+        case 'aborted':
+          console.log('Speech recognition was aborted.');
+          setMicError('Speech recognition was interrupted. Try again.');
+          break;
+        default:
+          console.error('Speech recognition error occurred:', event.error);
+          setMicError('Error with speech recognition. Please try again.');
       }
     };
     
@@ -324,13 +403,18 @@ const Interview = () => {
   
   // Handle end call
   const endCall = () => {
+    console.log('📞 Call end requested');
     setShowEndCallConfirm(true);
   };
   
   // Confirm end call
   const confirmEndCall = () => {
+    console.log('🛑 Call ended by user');
     if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject.getTracks().forEach(track => {
+        console.log(`🛑 Stopping track: ${track.kind}`);
+        track.stop();
+      });
     }
     navigate('/');
   };
@@ -451,7 +535,19 @@ const Interview = () => {
 
                 {/* User Video */}
                 <div className="absolute bottom-4 right-4 w-48 h-32 bg-gray-900 rounded-lg overflow-hidden">
-                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center relative">
+                    {/* Microphone status indicator */}
+                    {!isMuted && (
+                      <div className="absolute top-2 left-2 z-10 flex items-center space-x-1 px-2 py-1 bg-black bg-opacity-50 rounded-full">
+                        <div className={`w-2 h-2 rounded-full ${isListening ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
+                        <span className="text-white text-xs">{isListening ? 'Listening...' : 'Ready'}</span>
+                      </div>
+                    )}
+                    {micError && (
+                      <div className="absolute bottom-2 left-2 right-2 bg-red-500 bg-opacity-80 text-white text-xs p-1 rounded text-center">
+                        {micError}
+                      </div>
+                    )}
                     {isVideoOn ? (
                       <video 
                         ref={videoRef}
@@ -467,8 +563,12 @@ const Interview = () => {
                       />
                     ) : (
                       <div className="text-gray-400 text-center p-4">
-                        <div className="text-2xl mb-2">🎥</div>
-                        <div className="text-sm">Camera is off</div>
+                        <div className="text-2xl mb-2">
+                          {isMuted ? '🎤' : '🎧'}
+                        </div>
+                        <div className="text-sm">
+                          {isMuted ? 'Mic is off' : 'Listening...'}
+                        </div>
                       </div>
                     )}
                   </div>
