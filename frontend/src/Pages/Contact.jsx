@@ -47,7 +47,7 @@ const Contact = () => {
 
   const contactInfo = [
     {
-      icon: <FaMapMarkerAlt className="w-6 h-6 text-blue-500" />,
+      icon: <FaMapMarkerAlt className="w-6 h-6 text-blue-500 " />,
       title: 'Location',
       details: '123 AI Street, Tech City, TC 12345, Country'
     },
@@ -64,7 +64,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-[4rem]">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="container mx-auto px-6 text-center">
