@@ -100,6 +100,22 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
       });
   
       console.log('Success:', response.data);
+      
+      // Store user data in localStorage
+      if (isLogin) {
+        localStorage.setItem('user', JSON.stringify({
+          name: response.data.user?.name || formData.email.split('@')[0],
+          email: formData.email
+        }));
+        localStorage.setItem('token', response.data.token);
+      } else {
+        localStorage.setItem('user', JSON.stringify({
+          name: formData.name,
+          email: formData.email
+        }));
+        localStorage.setItem('token', response.data.token);
+      }
+      
       toast.success(`${isLogin ? 'Login' : 'Signup'} successful!`, {
         position: "top-right",
         autoClose: 3000,
@@ -114,6 +130,9 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
         email: '',
         password: ''
       });
+      
+      // Reload the page to update the navbar
+      window.location.reload();
       onClose();
     } catch (error) {
       console.error('Error:', error);
