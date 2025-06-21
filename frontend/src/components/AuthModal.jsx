@@ -5,6 +5,9 @@ import { auth, googleProvider, githubProvider, signInWithPopup } from '../Fireba
 import { FaGithub, FaGoogle, FaTimes } from 'react-icons/fa';
 
 const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; 
+  
   console.log('AuthModal rendered with isOpen:', isOpen, 'mode:', mode);
   const [isLogin, setIsLogin] = useState(mode === 'login');
   const [isLoading, setIsLoading] = useState(false);
@@ -84,8 +87,8 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
     setIsLoading(true);
   
     const endpoint = isLogin
-      ? 'http://localhost:5000/api/auth/login'
-      : 'http://localhost:5000/api/auth/signup';
+      ? `${backendUrl}/api/auth/login`
+      : `${backendUrl}/api/auth/signup`;
   
     try {
       const requestData = isLogin
