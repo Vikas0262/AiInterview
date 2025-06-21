@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  FiArrowLeft, 
-  FiMic, 
-  FiMicOff, 
-  FiVideo, 
-  FiVideoOff, 
-  FiPhone, 
-  FiMessageSquare 
+import {
+  FiArrowLeft,
+  FiMic,
+  FiMicOff,
+  FiVideo,
+  FiVideoOff,
+  FiPhone,
+  FiMessageSquare
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import ChatWithAvatar from '../components/ChatWithAvatar';
@@ -19,11 +19,13 @@ const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/
 // Speech recognition setup
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
 if (recognition) {
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
 }
+
 
 const Interview = () => {
   // State management
@@ -35,24 +37,24 @@ const Interview = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showEndCallConfirm, setShowEndCallConfirm] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { 
-      id: 1, 
-      sender: 'AI', 
-      message: 'Hello! Welcome to your interview. I\'ll be your interviewer today. Please enable your microphone and camera when ready.', 
-      time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    {
+      id: 1,
+      sender: 'AI',
+      message: 'Hello! Welcome to your interview. I\'ll be your interviewer today. Please enable your microphone and camera when ready.',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSpeaking: false
     },
   ]);
-  
+
   // Refs and hooks
   const videoRef = useRef(null);
   const navigate = useNavigate();
-  
+
   // Initialize video stream
   useEffect(() => {
     let stream = null;
     const currentVideoRef = videoRef.current;
-    
+
     const enableMedia = async () => {
       // If both mic and camera are off, don't request any media
       if (isMuted && !isVideoOn) {
@@ -71,7 +73,7 @@ const Interview = () => {
               audio: true,
               video: false
             });
-            
+
             if (currentVideoRef) {
               // Stop any existing tracks
               if (currentVideoRef.srcObject) {
@@ -82,13 +84,13 @@ const Interview = () => {
           }
           return;
         }
-        
+
         // If video is on, request both audio and video
         stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: !isMuted
         });
-        
+
         if (currentVideoRef) {
           // Stop any existing tracks
           if (currentVideoRef.srcObject) {
@@ -109,9 +111,9 @@ const Interview = () => {
         }
       }
     };
-    
+
     enableMedia();
-    
+
     // Cleanup function
     return () => {
       if (stream) {
@@ -119,7 +121,7 @@ const Interview = () => {
       }
     };
   }, [isVideoOn, isMuted]);
-  
+
   // Handle sending a new message
   const handleSendMessage = async (message) => {
     // Add user message
@@ -127,14 +129,14 @@ const Interview = () => {
       id: Date.now(),
       sender: 'user',
       message,
-      time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSpeaking: false
     };
-    
+
     setChatMessages(prev => [...prev, userMessage]);
     console.log('📩 User sent message:', message);
     setIsProcessing(true);
-    
+
     // Simulate AI response
     setTimeout(() => {
       const responses = [
@@ -144,76 +146,76 @@ const Interview = () => {
         "I see. What skills do you think are most important for this role?",
         "Thanks for sharing. Let's discuss your experience with..."
       ];
-      
+
       const aiMessage = {
         id: Date.now() + 1,
         sender: 'AI',
         message: responses[Math.floor(Math.random() * responses.length)],
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSpeaking: true
       };
-      
+
       setChatMessages(prev => [...prev, aiMessage]);
       console.log('🤖 AI response:', aiMessage.message);
       setIsProcessing(false);
     }, 1500);
   };
-  
+
   // Toggle between chat and video modes
   const toggleChatMode = () => {
     const newMode = !isInChatMode;
     console.log(`🔄 Switching to ${newMode ? 'Chat' : 'Video'} mode`);
     setIsInChatMode(newMode);
   };
-  
+
   // Toggle mute
   const toggleMute = async () => {
     const newMutedState = !isMuted;
     console.log(`🔇 Microphone ${newMutedState ? 'muted' : 'unmuted'}`);
     setMicError(null);
-    
+
     if (!newMutedState && recognition) {
       // If unmuting, start listening
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true
-          } 
+          }
         });
-        
+
         // Test if we can actually get audio data
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
         source.connect(analyser);
-        
+
         try {
           recognition.start();
           console.log('🎤 Speech recognition started');
           setIsListening(true);
-          
+
           // Visual feedback for audio level
           const checkAudioLevel = () => {
             if (!isListening) return;
-            
+
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
             const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-            
+
             if (average < 5) {
               console.log('🔈 Low audio input detected');
               setMicError('Speak louder or move closer to the microphone');
             } else {
               setMicError(null);
             }
-            
+
             requestAnimationFrame(checkAudioLevel);
           };
-          
+
           checkAudioLevel();
-          
+
         } catch (err) {
           console.error('Error starting speech recognition:', err);
           setMicError('Error initializing speech recognition');
@@ -237,24 +239,24 @@ const Interview = () => {
       setIsListening(false);
       setMicError(null);
     }
-    
+
     setIsMuted(newMutedState);
   };
-  
+
   // Toggle video
   const toggleVideo = async () => {
     const newVideoState = !isVideoOn;
     console.log(`🎥 Camera ${newVideoState ? 'enabled' : 'disabled'}`);
-    
+
     // If we're turning video off, stop all video tracks
     if (!newVideoState && videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject;
       const tracks = stream.getVideoTracks();
       tracks.forEach(track => track.stop());
     }
-    
+
     setIsVideoOn(newVideoState);
-    
+
     if (newVideoState) {
       try {
         await navigator.mediaDevices.getUserMedia({ video: true });
@@ -265,26 +267,26 @@ const Interview = () => {
       }
     }
   };
-  
+
   // Process user speech and get response from Gemini
   const processUserInput = useCallback(async (text) => {
     if (!text.trim()) return;
-    
+
     console.log('🎤 User speech detected:', text);
     setIsProcessing(true);
-    
+
     try {
       // Add user message to chat
       const userMessage = {
         id: Date.now(),
         sender: 'User',
         message: text,
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSpeaking: false
       };
-      
+
       setChatMessages(prev => [...prev, userMessage]);
-      
+
       // Get response from Gemini
       const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
@@ -299,40 +301,40 @@ const Interview = () => {
           }]
         })
       });
-      
+
       const data = await response.json();
       const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm not sure how to respond to that.";
-      
+
       // Add AI response to chat
       const aiMessage = {
         id: Date.now() + 1,
         sender: 'AI',
         message: aiResponse,
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSpeaking: true
       };
-      
+
       setChatMessages(prev => [...prev, aiMessage]);
-      
+
       // Speak the response
       console.log('🔊 AI speaking response:', aiResponse);
       const speech = new SpeechSynthesisUtterance(aiResponse);
       speech.onend = () => {
-        setChatMessages(prev => 
-          prev.map(msg => 
-            msg.id === aiMessage.id ? {...msg, isSpeaking: false} : msg
+        setChatMessages(prev =>
+          prev.map(msg =>
+            msg.id === aiMessage.id ? { ...msg, isSpeaking: false } : msg
           )
         );
       };
       window.speechSynthesis.speak(speech);
-      
+
     } catch (error) {
       console.error('Error processing response:', error);
       const errorMessage = {
         id: Date.now(),
         sender: 'AI',
         message: "I'm having trouble processing your request. Please try again.",
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSpeaking: false
       };
       setChatMessages(prev => [...prev, errorMessage]);
@@ -340,31 +342,31 @@ const Interview = () => {
       setIsProcessing(false);
     }
   }, []);
-  
+
   // Set up speech recognition
   useEffect(() => {
     if (!recognition) {
       console.warn('Speech recognition not supported in this browser');
       return;
     }
-    
+
     recognition.onresult = (event) => {
       const transcript = Array.from(event.results)
         .map(result => result[0])
         .map(result => result.transcript)
         .join('');
-      
+
       // If we have a final result, process it
       if (event.results[0].isFinal) {
         processUserInput(transcript);
       }
     };
-    
+
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
-      
-      switch(event.error) {
+
+      switch (event.error) {
         case 'no-speech':
           console.log('No speech was detected. Microphone might be muted or not working.');
           setMicError('No speech detected. Try speaking louder or checking your microphone.');
@@ -387,26 +389,26 @@ const Interview = () => {
           setMicError('Error with speech recognition. Please try again.');
       }
     };
-    
+
     recognition.onend = () => {
       if (!isMuted && recognition) {
         recognition.start();
       }
     };
-    
+
     return () => {
       if (recognition) {
         recognition.stop();
       }
     };
   }, [isMuted, processUserInput]);
-  
+
   // Handle end call
   const endCall = () => {
     console.log('📞 Call end requested');
     setShowEndCallConfirm(true);
   };
-  
+
   // Confirm end call
   const confirmEndCall = () => {
     console.log('🛑 Call ended by user');
@@ -418,12 +420,12 @@ const Interview = () => {
     }
     navigate('/');
   };
-  
+
   // Cancel end call
   const cancelEndCall = () => {
     setShowEndCallConfirm(false);
   };
-  
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Main Content Area */}
@@ -431,7 +433,7 @@ const Interview = () => {
         {/* Header */}
         <header className="bg-white shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={() => window.history.back()}
               className="p-2 hover:bg-gray-100 rounded-full"
               aria-label="Back"
@@ -445,7 +447,7 @@ const Interview = () => {
               </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={toggleChatMode}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center space-x-2"
           >
@@ -460,7 +462,7 @@ const Interview = () => {
           <div className="flex-1 flex flex-col mb-6 md:mb-0 md:mr-6">
             {isInChatMode ? (
               <div className="bg-white rounded-lg shadow-lg flex-1 flex flex-col overflow-hidden">
-                <ChatWithAvatar 
+                <ChatWithAvatar
                   messages={chatMessages}
                   onSendMessage={handleSendMessage}
                   isLoading={isProcessing}
@@ -476,45 +478,43 @@ const Interview = () => {
                         <div className="relative w-full h-full">
                           {/* Face */}
                           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-32 bg-blue-300 rounded-full"></div>
-                          
+
                           {/* Eyes */}
                           <div className="absolute top-12 left-12 w-6 h-6 bg-white rounded-full"></div>
                           <div className="absolute top-12 right-12 w-6 h-6 bg-white rounded-full"></div>
-                          
+
                           {/* Eye pupils - animate when speaking or listening */}
-                          <div 
+                          <div
                             className={`absolute top-14 left-14 w-3 h-3 bg-blue-800 rounded-full transition-transform duration-300 ${(chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking) || isListening) ? 'animate-bounce' : ''}`}
                           ></div>
-                          <div 
+                          <div
                             className={`absolute top-14 right-14 w-3 h-3 bg-blue-800 rounded-full transition-transform duration-300 ${(chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking) || isListening) ? 'animate-bounce' : ''}`}
-                            style={{animationDelay: '0.2s'}}
+                            style={{ animationDelay: '0.2s' }}
                           ></div>
-                          
+
                           {/* Smile - changes based on speaking/listening state */}
-                          <div 
-                            className={`absolute bottom-12 left-1/2 transform -translate-x-1/2 w-16 h-8 border-b-4 border-blue-800 rounded-full transition-all duration-300 ${
-                              chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking) 
-                                ? 'w-16 h-8 border-b-4' 
-                                : isListening 
-                                  ? 'w-12 h-6 border-b-2' 
+                          <div
+                            className={`absolute bottom-12 left-1/2 transform -translate-x-1/2 w-16 h-8 border-b-4 border-blue-800 rounded-full transition-all duration-300 ${chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking)
+                                ? 'w-16 h-8 border-b-4'
+                                : isListening
+                                  ? 'w-12 h-6 border-b-2'
                                   : 'w-16 h-8 border-b-4'
-                            }`}
+                              }`}
                           ></div>
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Speaking/Listening indicator */}
                     {(chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking) || isListening) && (
                       <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
                         {[1, 2, 3].map((i) => (
-                          <div 
+                          <div
                             key={i}
-                            className={`w-2 h-6 rounded-full animate-pulse ${
-                              chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking) 
-                                ? 'bg-blue-300' 
+                            className={`w-2 h-6 rounded-full animate-pulse ${chatMessages.some(msg => msg.sender === 'AI' && msg.isSpeaking)
+                                ? 'bg-blue-300'
                                 : 'bg-green-300'
-                            }`}
+                              }`}
                             style={{
                               animationDelay: `${i * 0.1}s`,
                               animationDuration: '0.8s'
@@ -549,11 +549,11 @@ const Interview = () => {
                       </div>
                     )}
                     {isVideoOn ? (
-                      <video 
+                      <video
                         ref={videoRef}
-                        autoPlay 
-                        playsInline 
-                        muted 
+                        autoPlay
+                        playsInline
+                        muted
                         className="w-full h-full object-cover"
                         onCanPlay={() => {
                           if (videoRef.current) {
@@ -576,15 +576,14 @@ const Interview = () => {
 
                 {/* Call Controls */}
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-4">
-                  <button 
+                  <button
                     onClick={toggleMute}
-                    className={`p-3 rounded-full ${
-                      isMuted 
-                        ? 'bg-red-100 text-red-600' 
-                        : isListening 
-                          ? 'bg-green-100 text-green-600 animate-pulse' 
+                    className={`p-3 rounded-full ${isMuted
+                        ? 'bg-red-100 text-red-600'
+                        : isListening
+                          ? 'bg-green-100 text-green-600 animate-pulse'
                           : 'bg-white text-gray-700'
-                    } hover:bg-gray-100 transition-colors`}
+                      } hover:bg-gray-100 transition-colors`}
                     aria-label={isMuted ? 'Unmute' : 'Mute'}
                     title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
                     disabled={isProcessing}
@@ -600,7 +599,7 @@ const Interview = () => {
                       <FiMic className="w-6 h-6" />
                     )}
                   </button>
-                  <button 
+                  <button
                     onClick={toggleVideo}
                     className={`p-3 rounded-full ${!isVideoOn ? 'bg-red-100 text-red-600' : 'bg-white text-gray-700'} hover:bg-gray-100 transition-colors`}
                     aria-label={isVideoOn ? 'Turn off video' : 'Turn on video'}
@@ -608,7 +607,7 @@ const Interview = () => {
                   >
                     {isVideoOn ? <FiVideo className="w-6 h-6" /> : <FiVideoOff className="w-6 h-6" />}
                   </button>
-                  <button 
+                  <button
                     onClick={endCall}
                     className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transform hover:scale-105 transition-transform"
                     aria-label="End call"
@@ -621,75 +620,129 @@ const Interview = () => {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="w-full md:w-80 bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="font-semibold text-gray-800">Interview Details</h2>
-              <p className="text-sm text-gray-500">Position: Software Engineer</p>
+          {/* Right Side Panel */}
+          <div className="w-full md:w-96 bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+            {/* Profile Card */}
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-2xl font-bold text-blue-700">
+                    {localStorage.getItem('userName')?.charAt(0) || 'U'}
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div className="flex-1">
+                  <h2 className="font-semibold text-gray-800">{localStorage.getItem('userName') || 'Interview Candidate'}</h2>
+                  <p className="text-sm text-gray-600">Software Engineer</p>
+                  <button className="mt-1 text-xs text-blue-600 hover:underline">
+                    Preview Resume
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <div className="flex-1 p-4 overflow-y-auto">
-              <h3 className="font-medium text-gray-700 mb-3">Current Question</h3>
-              <div className="bg-blue-50 p-3 rounded-lg mb-4">
+
+            {/* Timer and Progress */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Time Remaining</span>
+                <span className="text-lg font-bold text-blue-600">24:35</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '65%' }}></div>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Question 3 of 5</span>
+                <span>65% Complete</span>
+              </div>
+            </div>
+
+            {/* Current Question */}
+            {/* <div className="flex-1 p-4 overflow-y-auto">
+              <h3 className="font-medium text-gray-700 mb-2">Current Question</h3>
+              <div className="bg-blue-50 p-3 rounded-lg mb-4 border-l-4 border-blue-500">
                 <p className="text-sm text-gray-800">
                   {chatMessages.filter(m => m.sender === 'AI').pop()?.message || 
                    "Let's start with a brief introduction. Tell me about yourself."}
                 </p>
               </div>
-              
-              <h3 className="font-medium text-gray-700 mb-3">Tips</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  <span>Speak clearly and at a moderate pace</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  <span>Provide specific examples from your experience</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  <span>Ask for clarification if needed</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="p-4 border-t border-gray-200">
-              <button 
-                onClick={toggleChatMode}
-                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center justify-center space-x-2"
-              >
-                <FiMessageSquare className="w-4 h-4" />
-                <span>{isInChatMode ? 'Switch to Video' : 'Open Chat'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* End Call Confirmation Modal */}
-      {showEndCallConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">End Interview?</h3>
-            <p className="text-gray-600 mb-6">Are you sure you want to end the interview? This action cannot be undone.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={cancelEndCall}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmEndCall}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-              >
-                End Interview
-              </button>
+              {/* Notes Section */}
+            {/* <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-gray-700">Your Notes</h3>
+                  <button className="text-xs text-blue-600 hover:underline">Clear</button>
+                </div>
+                <textarea 
+                  className="w-full h-24 p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Write down your thoughts here..."
+                ></textarea>
+              </div> */}
+
+            {/* Question Tips */}
+            <div className="bg-yellow-50 p-3 rounded-lg mb-4">
+              <h3 className="font-medium text-gray-700 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-1 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h2a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Answering Tips
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start">
+                  <span className="text-yellow-500 mr-2">•</span>
+                  <span>Use the <strong>STAR</strong> method: Situation, Task, Action, Result</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-yellow-500 mr-2">•</span>
+                  <span>Keep your answer between 1-2 minutes</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-yellow-500 mr-2">•</span>
+                  <span>Focus on relevant experience and achievements</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Keywords Tracker */}
+            <div>
+              <h3 className="font-medium text-gray-700 mb-2 px-3">Keywords to Include</h3>
+              <div className="flex flex-wrap gap-2 px-3">
+                {['JavaScript', 'React', 'Node.js', 'Problem Solving', 'Teamwork'].map((keyword, index) => (
+                  <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {keyword}
+                    <svg className="ml-1.5 w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* End Call Confirmation Modal */}
+        {showEndCallConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">End Interview?</h3>
+              <p className="text-gray-600 mb-6">Are you sure you want to end the interview? This action cannot be undone.</p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={cancelEndCall}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmEndCall}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                >
+                  End Interview
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

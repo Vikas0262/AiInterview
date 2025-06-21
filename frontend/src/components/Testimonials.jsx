@@ -5,7 +5,7 @@ import t3 from '../assets/Testimonial/t3.jpg'
 
 const Testimonials = () => {
   return (
-    <div className="py-16 px-6 bg-gradient-to-br from-[#2B3A67]/80 to-[#735D78]/80">
+    <div className="py-16 px-6">
         <div className="container px-6 mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">What Our Users Say</h2>
           
