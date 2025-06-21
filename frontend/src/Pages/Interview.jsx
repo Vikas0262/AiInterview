@@ -38,19 +38,39 @@ const Interview = () => {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showEndCallConfirm, setShowEndCallConfirm] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 1,
-      sender: 'AI',
-      message: 'Hello! Welcome to your interview. I\'ll be your interviewer today. Please enable your microphone and camera when ready.',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isSpeaking: false
-    },
-  ]);
+  const [hasGreeted, setHasGreeted] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
 
   // Refs and hooks
   const videoRef = useRef(null);
   const navigate = useNavigate();
+
+  // Add initial greeting when component mounts
+  useEffect(() => {
+    if (!hasGreeted) {
+      const greetingMessage = {
+        id: Date.now(),
+        sender: 'AI',
+        message: 'Hello! Welcome to your interview. I will be your interviewer today. Please enable your microphone and camera when you are ready to begin.',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isSpeaking: true
+      };
+
+      setChatMessages([greetingMessage]);
+      setHasGreeted(true);
+      
+      // Speak the greeting
+      const speech = new SpeechSynthesisUtterance(greetingMessage.message);
+      speech.onend = () => {
+        setChatMessages(prev =>
+          prev.map(msg =>
+            msg.id === greetingMessage.id ? { ...msg, isSpeaking: false } : msg
+          )
+        );
+      };
+      window.speechSynthesis.speak(speech);
+    }
+  }, [hasGreeted]);
 
   // Initialize video stream
   useEffect(() => {
@@ -124,6 +144,97 @@ const Interview = () => {
     };
   }, [isVideoOn, isMuted]);
 
+  // Get appropriate follow-up question based on user's message
+  const getFollowUpQuestion = (userMessage) => {
+    const message = userMessage.toLowerCase();
+    
+    // Check for technical skills
+    const techKeywords = [
+      'fullstack', 'frontend', 'backend', 'react', 'node', 'javascript',
+      'python', 'java', 'sql', 'database', 'api', 'aws', 'cloud', 'devops'
+    ];
+    
+    // Check for experience-related keywords
+    const expKeywords = [
+      'experience', 'worked', 'years', 'project', 'developed', 'built',
+      'created', 'implemented', 'designed', 'led', 'managed', 'team'
+    ];
+    
+    // Check for behavioral aspects
+    const behavioralKeywords = [
+      'challenge', 'difficult', 'problem', 'solved', 'conflict', 'teamwork',
+      'failure', 'success', 'proud', 'learned', 'mistake', 'improve'
+    ];
+    
+    // Check for role-specific terms
+    const roleKeywords = [
+      'developer', 'engineer', 'designer', 'manager', 'architect', 'analyst',
+      'lead', 'director', 'specialist', 'consultant'
+    ];
+    
+    // Count keyword matches
+    const techMatch = techKeywords.filter(word => message.includes(word)).length;
+    const expMatch = expKeywords.filter(word => message.includes(word)).length;
+    const behavioralMatch = behavioralKeywords.filter(word => message.includes(word)).length;
+    const roleMatch = roleKeywords.filter(word => message.includes(word)).length;
+    
+    // Define question categories
+    const technicalQuestions = [
+      "Can you elaborate on your experience with that technology?",
+      "What challenges did you face while working with that technology?",
+      "How do you stay updated with the latest developments in this area?",
+      "Can you give me an example of a project where you used this technology?",
+      "What do you consider best practices when working with this technology?"
+    ];
+    
+    const experienceQuestions = [
+      "What were your key responsibilities in that role?",
+      "What was the impact of your work in that position?",
+      "What was the most challenging project you worked on and why?",
+      "How did you measure success in that role?",
+      "What were the key technologies you used in that position?"
+    ];
+    
+    const behavioralQuestions = [
+      "How did you handle that situation?",
+      "What would you do differently if faced with the same challenge again?",
+      "How did your team respond to your approach?",
+      "What did you learn from that experience?",
+      "Can you walk me through your thought process during that situation?"
+    ];
+    
+    const roleSpecificQuestions = [
+      "What attracted you to this type of role?",
+      "What do you enjoy most about working in this type of position?",
+      "How do you see this role evolving in the next few years?",
+      "What skills do you think are most important for success in this role?",
+      "How do you handle the challenges specific to this type of position?"
+    ];
+    
+    // Default questions if no specific keywords are found
+    const defaultQuestions = [
+      "Could you tell me more about that?",
+      "What were the key takeaways from that experience?",
+      "How does this experience relate to the position you're applying for?",
+      "What was your role in that situation?",
+      "How did you approach that challenge?"
+    ];
+    
+    // Determine which category has the most matches
+    const maxMatch = Math.max(techMatch, expMatch, behavioralMatch, roleMatch);
+    
+    // Select a random question from the most relevant category
+    if (maxMatch > 0) {
+      if (techMatch === maxMatch) return technicalQuestions[Math.floor(Math.random() * technicalQuestions.length)];
+      if (expMatch === maxMatch) return experienceQuestions[Math.floor(Math.random() * experienceQuestions.length)];
+      if (behavioralMatch === maxMatch) return behavioralQuestions[Math.floor(Math.random() * behavioralQuestions.length)];
+      return roleSpecificQuestions[Math.floor(Math.random() * roleSpecificQuestions.length)];
+    }
+    
+    // Fallback to default questions
+    return defaultQuestions[Math.floor(Math.random() * defaultQuestions.length)];
+  };
+
   // Handle sending a new message
   const handleSendMessage = async (message) => {
     // Add user message
@@ -139,20 +250,15 @@ const Interview = () => {
     console.log('📩 User sent message:', message);
     setIsProcessing(true);
 
-    // Simulate AI response
+    // Generate AI response
     setTimeout(() => {
-      const responses = [
-        "That's an interesting perspective. Could you elaborate more on that?",
-        "I appreciate your answer. Let me ask you another question...",
-        "Great point! Now, moving on to the next topic...",
-        "I see. What skills do you think are most important for this role?",
-        "Thanks for sharing. Let's discuss your experience with..."
-      ];
-
+      // Get a relevant follow-up question based on user's message
+      const response = getFollowUpQuestion(message);
+      
       const aiMessage = {
         id: Date.now() + 1,
         sender: 'AI',
-        message: responses[Math.floor(Math.random() * responses.length)],
+        message: response,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSpeaking: true
       };
@@ -172,6 +278,9 @@ const Interview = () => {
 
   // Toggle mute
   const toggleMute = async () => {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel(); // Stop any ongoing AI speech
+    }
     const newMutedState = !isMuted;
     console.log(`🔇 Microphone ${newMutedState ? 'muted' : 'unmuted'}`);
     setMicError(null);
@@ -272,7 +381,39 @@ const Interview = () => {
 
   // Process user speech and get response from Gemini
   const processUserInput = useCallback(async (text) => {
-    if (!text.trim()) return;
+    if (!text.trim() || window.speechSynthesis.speaking) {
+      // If AI is speaking, restart recognition when done
+      if (window.speechSynthesis.speaking) {
+        const checkSpeaking = setInterval(() => {
+          if (!window.speechSynthesis.speaking) {
+            clearInterval(checkSpeaking);
+            if (recognition && !isMuted) {
+              try {
+                recognition.start();
+                console.log('Restarted speech recognition after AI finished speaking');
+              } catch (e) {
+                console.log('Error restarting recognition:', e);
+              }
+            }
+          }
+        }, 500);
+      }
+      return;
+    }
+    
+    // Check for interruption commands
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('stop') || lowerText.includes('interrupt') || lowerText.includes('hold on')) {
+      // Stop any ongoing speech
+      window.speechSynthesis.cancel();
+      // Update any speaking messages to not speaking
+      setChatMessages(prev => 
+        prev.map(msg => 
+          msg.isSpeaking ? { ...msg, isSpeaking: false } : msg
+        )
+      );
+      return;
+    }
     
     // Prevent processing if we're already processing or if this is a duplicate of the last message
     if (isProcessing || chatMessages.some(msg => 
@@ -298,6 +439,13 @@ const Interview = () => {
 
       setChatMessages(prev => [...prev, userMessage]);
 
+      // Get conversation history for context
+      const conversationHistory = chatMessages
+        .filter(msg => msg.sender === 'AI' || msg.sender === 'User')
+        .slice(-4) // Get last 4 messages for context
+        .map(msg => `${msg.sender}: ${msg.message}`)
+        .join('\n');
+
       // Get response from Gemini
       const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
@@ -307,14 +455,31 @@ const Interview = () => {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are an AI interviewer. Respond to this in a professional and helpful manner: ${text}`
+              text: `You are an AI interviewer. The user is a candidate in an interview. 
+              
+Previous conversation for context (you can reference this but don't repeat it):
+${conversationHistory}
+
+User's latest message: ${text}
+
+Instructions for your response:
+1. Do NOT introduce yourself or say your name
+2. Be concise and to the point
+3. Focus on asking relevant follow-up questions or providing feedback
+4. If the user asks you to stop or says they need a moment, acknowledge briefly and wait for their next input
+
+Your response:`
             }]
           }]
         })
       });
 
       const data = await response.json();
-      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm not sure how to respond to that.";
+      let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm not sure how to respond to that.";
+
+      // Clean up common AI intros if they still appear
+      aiResponse = aiResponse.replace(/^(hi|hello|hey|hi there|hello there|hi!|hello!|hey!|hi there!|hello there!),?\s*(my name is \w+ |i am \w+ |i'm \w+ )?(the )?(ai )?(interviewer )?(here )?(to )?(help )?(you )?(with )?(the )?(interview )?/i, '');
+      aiResponse = aiResponse.trim() || "Could you please rephrase that?";
 
       // Add AI response to chat
       const aiMessage = {
@@ -329,6 +494,8 @@ const Interview = () => {
 
       // Speak the response
       console.log('🔊 AI speaking response:', aiResponse);
+      // Stop any ongoing speech before starting new one
+      window.speechSynthesis.cancel();
       const speech = new SpeechSynthesisUtterance(aiResponse);
       speech.onend = () => {
         setChatMessages(prev =>
@@ -354,6 +521,57 @@ const Interview = () => {
     }
   }, []);
 
+  // Function to add AI greeting message
+  const addAIGreeting = useCallback(() => {
+    const greetingMessage = {
+      id: Date.now(),
+      sender: 'AI',
+      message: 'Hello! Welcome to your interview. I will be your interviewer today. Please enable your microphone and camera when you are ready to begin.',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isSpeaking: true
+    };
+
+    setChatMessages(prev => [greetingMessage]);
+    
+    // Speak the greeting
+    const speech = new SpeechSynthesisUtterance(greetingMessage.message);
+    speech.onend = () => {
+      setChatMessages(prev =>
+        prev.map(msg =>
+          msg.id === greetingMessage.id ? { ...msg, isSpeaking: false } : msg
+        )
+      );
+    };
+    window.speechSynthesis.speak(speech);
+  }, []);
+
+  // Add initial greeting when component mounts
+  useEffect(() => {
+    if (!hasGreeted) {
+      const greetingMessage = {
+        id: Date.now(),
+        sender: 'AI',
+        message: 'Hello! Welcome to your interview. I will be your interviewer today. Please enable your microphone and camera when you are ready to begin.',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isSpeaking: true
+      };
+
+      setChatMessages([greetingMessage]);
+      setHasGreeted(true);
+      
+      // Speak the greeting
+      const speech = new SpeechSynthesisUtterance(greetingMessage.message);
+      speech.onend = () => {
+        setChatMessages(prev =>
+          prev.map(msg =>
+            msg.id === greetingMessage.id ? { ...msg, isSpeaking: false } : msg
+          )
+        );
+      };
+      window.speechSynthesis.speak(speech);
+    }
+  }, [hasGreeted]);
+
   // Set up auth state listener
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
@@ -368,7 +586,10 @@ const Interview = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      window.speechSynthesis.cancel(); // Clean up any ongoing speech
+    };
   }, []);
 
   // Set up speech recognition
@@ -377,26 +598,60 @@ const Interview = () => {
       console.warn('Speech recognition not supported in this browser');
       return;
     }
+    
+    // Add this to track if we're currently processing
+    let isProcessingInput = false;
 
     let debounceTimer;
     let lastProcessedText = '';
+    let isUserSpeaking = false;
+    let finalTranscript = '';
 
     recognition.onresult = (event) => {
       // Clear any pending debounce
       clearTimeout(debounceTimer);
       
-      const transcript = Array.from(event.results)
-        .map(result => result[0])
-        .map(result => result.transcript.trim())
-        .join('');
-
-      // Only process if we have a final result and it's not empty
-      if (event.results[0].isFinal && transcript && transcript !== lastProcessedText) {
-        // Debounce to prevent multiple rapid triggers
+      // Get the current transcript
+      let interimTranscript = '';
+      let finalTranscript = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      
+      // If we're getting interim results, the user is still speaking
+      if (interimTranscript) {
+        isUserSpeaking = true;
+        return; // Don't process anything while user is still speaking
+      }
+      
+      // Only process if we have a final result, it's not empty, and it's different from last processed
+      finalTranscript = finalTranscript.trim();
+      if (finalTranscript && finalTranscript !== lastProcessedText && !isProcessingInput) {
+        // Set a longer debounce to ensure user has finished speaking
         debounceTimer = setTimeout(() => {
-          lastProcessedText = transcript;
-          processUserInput(transcript);
-        }, 500); // 500ms debounce
+          isProcessingInput = true;
+          lastProcessedText = finalTranscript;
+          isUserSpeaking = false; // User has finished speaking
+          
+          // Process the input and ensure recognition restarts
+          processUserInput(finalTranscript).finally(() => {
+            isProcessingInput = false;
+            if (recognition && !isMuted) {
+              try {
+                recognition.start();
+                console.log('Restarted speech recognition after processing input');
+              } catch (e) {
+                console.log('Error restarting recognition after processing:', e);
+              }
+            }
+          });
+        }, 1000); // 1s debounce to ensure user is done speaking
       }
     };
 
@@ -448,7 +703,7 @@ const Interview = () => {
         recognition.stop();
       }
     };
-  }, [isMuted, processUserInput]);
+  }, [isMuted, processUserInput, isProcessing]);
 
   // Handle end call
   const endCall = () => {
