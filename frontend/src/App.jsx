@@ -1,15 +1,17 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Home from './Pages/Home';
 import Chat from './Pages/Chat';
 import About from './Pages/About';
 import Contact from './Pages/Contact';
 import Interview from './Pages/Interview';
+import DomainSelection from './Pages/DomainSelection';
 import PracticeQuestions from './Pages/PracticeQuestions';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import ToastProvider from './components/ToastProvider';
 import Profile from './Pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -59,12 +61,22 @@ function App() {
           />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/chat" element={<Chat />} />
+            
+            {/* Public Routes */}
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/interview" element={<Interview />} />
-            <Route path="/practice-question" element={<PracticeQuestions />} />
-            <Route path="/profile" element={<Profile />} />
+            
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/domain" element={<DomainSelection />} />
+              <Route path="/interview" element={<Interview />} />
+              <Route path="/practice-question" element={<PracticeQuestions />} />
+              <Route path="/profile" element={<Profile />} />
+            </Route>
+            
+            {/* Fallback route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>
