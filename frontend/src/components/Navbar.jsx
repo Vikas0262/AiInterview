@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaRobot, FaBars, FaTimes, FaUserCircle, FaChevronDown, FaSignOutAlt } from 'react-icons/fa';
+import img from '../assets/logo1.png'
 
 const Navbar = (props) => {
   const { onOpenAuthModal } = props;
@@ -44,7 +45,7 @@ const Navbar = (props) => {
     { name: 'Practice Question', path: '/practice-question', isExternal: false },
     { name: 'About', path: '/about', isExternal: false },
     { name: 'Contact', path: '/contact', isExternal: false },
-    { name: 'Interview', path: '/interview', isExternal: false },
+    { name: 'Interview', path: '/domain', isExternal: false },
   ];
 
   const renderNavLink = (link,) => {
@@ -72,14 +73,28 @@ const Navbar = (props) => {
   };
 
   return (
-    <nav className="backdrop-blur-md fixed w-full z-50 bg-blue-400">
+    <nav className="fixed w-full z-50 bg-gradient-to-r from-indigo-600 to-purple-700 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center" onClick={() => window.scrollTo(0, 0)}>
-              <FaRobot className="w-6 h-6 text-blue-400 mr-2" />
-              <span className="text-xl font-bold text-white">InterviewAI</span>
+            <Link to="/" className="flex items-center h-16" onClick={() => window.scrollTo(0, 0)}>
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 flex items-center justify-center">
+                  <img 
+                    src={img} 
+                    alt="PrepIQ Logo" 
+                    className="h-full w-full object-contain"
+                    onError={(e) => {
+                      console.error('Error loading logo:', img);
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <span className="text-2xl font-extrabold text-white">
+                  PrepIQ
+                </span>
+              </div>
             </Link>
           </div>
 
@@ -181,11 +196,12 @@ const Navbar = (props) => {
                   </a>
                 ) : (
                   <Link
+                    key={link.path}
                     to={link.path}
-                    className={`block w-full py-2 text-base font-medium rounded-md ${
-                      location.pathname === link.path 
-                        ? 'text-white bg-gray-900' 
-                        : 'text-white/90 hover:text-white hover:bg-gray-700'
+                    className={`block w-full px-4 py-2.5 text-base font-medium rounded-lg transition-all duration-200 ${
+                      isActive(link.path)
+                        ? 'bg-white/20 text-white shadow-md'
+                        : 'text-white/90 hover:bg-white/10 hover:text-white hover:shadow-sm'
                     }`}
                   >
                     {link.name}
