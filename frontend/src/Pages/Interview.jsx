@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { auth } from '../Firebase'; // Import Firebase auth
 import {
   FiArrowLeft,
   FiMic,
@@ -29,6 +30,7 @@ if (recognition) {
 
 const Interview = () => {
   // State management
+  const [user, setUser] = useState(null);
   const [isInChatMode, setIsInChatMode] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // Start with muted
   const [micError, setMicError] = useState(null);
@@ -271,6 +273,15 @@ const Interview = () => {
   // Process user speech and get response from Gemini
   const processUserInput = useCallback(async (text) => {
     if (!text.trim()) return;
+    
+    // Prevent processing if we're already processing or if this is a duplicate of the last message
+    if (isProcessing || chatMessages.some(msg => 
+      msg.sender === 'User' && 
+      msg.message.toLowerCase() === text.toLowerCase()
+    )) {
+      console.log('Skipping duplicate or already processing message');
+      return;
+    }
 
     console.log('🎤 User speech detected:', text);
     setIsProcessing(true);
@@ -343,6 +354,23 @@ const Interview = () => {
     }
   }, []);
 
+  // Set up auth state listener
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        setUser({
+          displayName: authUser.displayName,
+          email: authUser.email,
+          photoURL: authUser.photoURL
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Set up speech recognition
   useEffect(() => {
     if (!recognition) {
@@ -350,15 +378,25 @@ const Interview = () => {
       return;
     }
 
+    let debounceTimer;
+    let lastProcessedText = '';
+
     recognition.onresult = (event) => {
+      // Clear any pending debounce
+      clearTimeout(debounceTimer);
+      
       const transcript = Array.from(event.results)
         .map(result => result[0])
-        .map(result => result.transcript)
+        .map(result => result.transcript.trim())
         .join('');
 
-      // If we have a final result, process it
-      if (event.results[0].isFinal) {
-        processUserInput(transcript);
+      // Only process if we have a final result and it's not empty
+      if (event.results[0].isFinal && transcript && transcript !== lastProcessedText) {
+        // Debounce to prevent multiple rapid triggers
+        debounceTimer = setTimeout(() => {
+          lastProcessedText = transcript;
+          processUserInput(transcript);
+        }, 500); // 500ms debounce
       }
     };
 
@@ -391,8 +429,17 @@ const Interview = () => {
     };
 
     recognition.onend = () => {
-      if (!isMuted && recognition) {
-        recognition.start();
+      if (!isMuted && recognition && !isProcessing) {
+        // Small delay before restarting recognition to prevent rapid restarts
+        setTimeout(() => {
+          if (!isMuted && recognition) {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.log('Error restarting recognition:', e);
+            }
+          }
+        }, 1000);
       }
     };
 
@@ -627,15 +674,22 @@ const Interview = () => {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-2xl font-bold text-blue-700">
-                    {localStorage.getItem('userName')?.charAt(0) || 'U'}
+                    {user?.displayName?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div className="flex-1">
-                  <h2 className="font-semibold text-gray-800">{localStorage.getItem('userName') || 'Interview Candidate'}</h2>
-                  <p className="text-sm text-gray-600">Software Engineer</p>
-                  <button className="mt-1 text-xs text-blue-600 hover:underline">
-                    Preview Resume
+                  <h2 className="font-semibold text-gray-800">
+                    {user?.displayName || user?.email || 'Interview Candidate'}
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    {user?.email || 'Software Engineer'}
+                  </p>
+                  <button 
+                    className="mt-1 text-xs text-blue-600 hover:underline"
+                    onClick={() => {}}
+                  >
+                    View Profile
                   </button>
                 </div>
               </div>
