@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors({
-    origin: 'https://ai-interview-vikas.vercel.appfi',
+    origin: 'https://ai-interview-vikas.vercel.app',
     credentials: true,
 }));
   
