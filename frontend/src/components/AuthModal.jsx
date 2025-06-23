@@ -290,7 +290,7 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
               <FaGoogle className="w-5 h-5 text-red-500 mr-1" />
               <span>Continue with Google</span>
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={handleGithubSignIn}
               disabled={isLoading}
@@ -299,7 +299,7 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
               <span className="sr-only">Sign in with GitHub</span>
               <FaGithub className="w-5 h-5 text-gray-900 mr-1" />
               <span>Continue with GitHub</span>
-            </button> 
+            </button>  */}
           </div>
         </div>
       </div>
