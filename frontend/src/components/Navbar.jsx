@@ -36,6 +36,10 @@ const Navbar = (props) => {
     setIsMobileMenuOpen(false);
   };
 
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
@@ -198,6 +202,7 @@ const Navbar = (props) => {
                   <Link
                     key={link.path}
                     to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className={`block w-full px-4 py-2.5 text-base font-medium rounded-lg transition-all duration-200 ${
                       isActive(link.path)
                         ? 'bg-white/20 text-white shadow-md'
