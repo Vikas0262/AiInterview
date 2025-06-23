@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ onNewChat }) => {
+const Sidebar = ({ onNewChat, onNavigate }) => {
+  const navigate = useNavigate();
   const [isNamingChat, setIsNamingChat] = useState(false);
   const [chatName, setChatName] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
@@ -56,16 +58,16 @@ const Sidebar = ({ onNewChat }) => {
         ) : (
           <button
             onClick={handleNewChatClick}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
           >
-            <FaPlus />
-            <span>New Chat</span>
+            <FaPlus className="w-4 h-4" />
+            <span className="font-medium">New Chat</span>
           </button>
         )}
       </div>
       
-      <div className="flex-1 overflow-y-auto py-2">
-        <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+      <div className="flex-1 overflow-y-auto py-2 px-2">
+        <h3 className="px-2 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Recent Chats
         </h3>
         {chatHistory.length > 0 ? (
@@ -73,15 +75,20 @@ const Sidebar = ({ onNewChat }) => {
             {chatHistory.map((chat) => (
               <button
                 key={chat.id}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex justify-between items-center"
+                onClick={() => {
+                  if (onNavigate) onNavigate();
+                }}
+                className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex justify-between items-center transition-colors duration-150"
               >
                 <span className="truncate">{chat.name}</span>
-                <span className="text-xs text-gray-400">{formatTime(chat.timestamp)}</span>
+                <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{formatTime(chat.timestamp)}</span>
               </button>
             ))}
           </div>
         ) : (
-          <p className="px-4 py-2 text-sm text-gray-500">No recent chats</p>
+          <div className="px-4 py-2">
+            <p className="text-sm text-gray-500">No recent chats</p>
+          </div>
         )}
       </div>
     </div>
